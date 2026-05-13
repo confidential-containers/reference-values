@@ -1,0 +1,17 @@
+version: "0.21.0"
+
+kata:
+  oci: "ghcr.io/kata-containers/cached-artefacts"
+  revision: "86e5975ad6a20f091ed686e492672c70496d0400" # tag: 3.30.0
+  source_repository: "kata-containers/kata-containers"
+  workflow_digest: "86e5975ad6a20f091ed686e492672c70496d0400"
+  workflow_trigger: "workflow_dispatch"
+
+# External tool repositories (cloned under .work/git/ before measurements run).
+git:
+  td-shim:
+    url: "https://github.com/confidential-containers/td-shim"
+    digest: "28bfa349f59a2d8da580e032c6fdcd79abd30824"
+
+reference_values_files:
+  - "arch/tdx.yaml"
