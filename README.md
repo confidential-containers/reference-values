@@ -45,6 +45,33 @@ python3 reference_values.py update-digests versions.yaml 3.30.0
 > [!NOTE]
 > If local `gh attestation ...` commands fail with `unknown command "attestation" for "gh"`, upgrade GitHub CLI to a version that includes the attestation subcommand.
 
+## GitHub Actions
+
+Workflow: `.github/workflows/reference-values.yml`
+
+- **pull_request**: verify upstream attestations and build JSON (no release upload)
+- **release** (`published`): build, upload `reference-values.json`, attach to the GitHub Release, and run `actions/attest`
+
+## Verify Release Attestation (gh CLI)
+
+When `reference-values.json` is published as a GitHub Release asset, you can verify its artifact attestation with `gh attestation verify`.
+
+```bash
+TAG="v0.21.0"
+
+gh release download "$TAG" \
+  --repo confidential-containers/reference-values \
+  --pattern "reference-values.json"
+
+gh attestation verify reference-values.json \
+  --repo confidential-containers/reference-values
+
+# Stricter: pin workflow to the release tag
+gh attestation verify reference-values.json \
+  --repo confidential-containers/reference-values \
+  --signer-workflow "confidential-containers/reference-values/.github/workflows/reference-values.yml@refs/tags/${TAG}"
+```
+
 ## Development
 
 To add a reference value, update OCI digests, or write a measurement plugin, see [DEVELOPMENT.md](DEVELOPMENT.md).
