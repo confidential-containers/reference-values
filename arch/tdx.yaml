@@ -6,7 +6,7 @@ reference_values:
     description: "Measurement of guest kernel image is covered by a CCEL eventlog entry"
     artifacts:
       - name: "kernel"
-        oci_sha256: "sha256:0754b7494883f55d003309c0fcda9448e83262007ceb4da6b1e7c30a0fb320bb"
+        oci_sha256: "sha256:9ecd8c0f8795e614757fac1824e10ac12d446ef36f81df0906f263b874d12b05"
 
   - name: "tdx-mrtd"
     measurement_script: "tdx-mrtd.sh"
@@ -15,4 +15,4 @@ reference_values:
     description: "Measurement of TDVF (TDX Virtual Firmware/OVMF) is covered by MR_TD register."
     artifacts:
       - name: "ovmf-tdx"
-        oci_sha256: "sha256:0802af108fbaaf535a348160d68dc2acc7ee06025a1d135b4cdac459cb8a6c4e"
+        oci_sha256: "sha256:96ef10410ebecf5af7b1d61cb65b8cb31c6ff1c893e6569e1b8a47ad8e41b0df"
