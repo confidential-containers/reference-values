@@ -2,8 +2,9 @@ name: Build Reference Values For CoCo Release
 
 on:
   pull_request:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-reference-values-pr:
@@ -19,11 +20,10 @@ jobs:
       - uses: ./.github/actions/build-reference-values
 
   build-reference-values-release:
-    if: github.event_name == 'release'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      actions: write
 
     steps:
       - name: Checkout repository
@@ -37,16 +37,15 @@ jobs:
           name: reference-values-json
           path: results/reference-values.json
 
-  publish-release:
+  draft-release:
     needs: build-reference-values-release
-    if: github.event_name == 'release'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       actions: read
       id-token: write
       attestations: write
-      artifact-metadata: write
 
     steps:
       - name: Download reference values JSON
@@ -55,14 +54,39 @@ jobs:
           name: reference-values-json
           path: results
 
-      - name: Release Reference Values JSON
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
-        with:
-          files: |
-            results/reference-values.json
-
       - name: Generate SLSA provenance attestation
         id: attest_provenance
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: results/reference-values.json
+
+      # Immutable releases lock their assets at publication, so the asset has to be
+      # attached while the release is still a draft. A maintainer publishes it afterwards.
+      - name: Attach reference values to draft release
+        id: draft_release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          fail_on_unmatched_files: true
+          files: |
+            results/reference-values.json
+
+      - name: Summarize draft release
+        env:
+          TAG: ${{ github.ref_name }}
+          DRAFT_URL: ${{ steps.draft_release.outputs.url }}
+        run: |
+          {
+            echo "### Draft release \`${TAG}\` is ready for review"
+            echo
+            echo "- Draft: ${DRAFT_URL}"
+            echo "- Asset sha256: \`$(sha256sum results/reference-values.json | cut -d' ' -f1)\`"
+            echo
+            echo "Publish this draft from the Releases page. Do not draft a separate"
+            echo "release for the same tag, or the tag ends up with two release objects."
+            echo
+            echo '```json'
+            cat results/reference-values.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

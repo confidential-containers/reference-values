@@ -121,3 +121,30 @@ pip install -r requirements.txt
 python3 reference_values.py verify versions.yaml
 python3 reference_values.py build versions.yaml results/reference-values.json
 ```
+
+## Cutting a release
+
+1. Merge the pull request that updates `versions.yaml` and `arch/*.yaml` for the new CoCo version.
+2. Tag the merged commit and push the tag:
+
+   ```bash
+   git tag v0.22.0 <commit> && git push upstream v0.22.0
+   ```
+
+3. CI verifies the upstream attestations, builds `reference-values.json`, generates the SLSA
+   provenance attestation, and attaches the JSON to a **draft** release for the tag. The run
+   summary shows the draft URL, the asset digest, and the generated JSON.
+4. Review the draft under Releases, edit the notes, and click **Publish release**.
+
+Assets have to be attached before publication: immutable releases lock their assets at publish
+time and nothing can be added afterwards. Do not draft a separate release for a tag CI has
+already prepared, or the tag ends up with two release objects.
+
+If a release run fails on something transient, re-run it from the Actions page or with
+`gh run rerun <run-id>`; a re-run keeps the tag context of the original event. Re-runs are only
+offered for 30 days — after that, delete the tag and push it again to get a fresh run, which is
+safe as long as no release was published from it.
+
+Publishing is irreversible and a published tag name cannot be reused, so a release that has to
+be redone gets a new tag such as `v0.22.0-fix1`. Leave `version` in `versions.yaml` alone in
+that case: the JSON keys carry the CoCo version, not the tag.

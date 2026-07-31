@@ -49,8 +49,11 @@ python3 reference_values.py update-digests versions.yaml 3.30.0
 
 Workflow: `.github/workflows/reference-values.yml`
 
-- **pull_request**: verify upstream attestations and build JSON (no release upload)
-- **release** (`published`): build, upload `reference-values.json`, attach to the GitHub Release, and run `actions/attest`
+- **pull_request**: verify upstream attestations and build JSON (nothing is published)
+- **tag push** (`v*`): verify, build, run `actions/attest`, and attach `reference-values.json` to a **draft** release for that tag; a maintainer then publishes the draft
+
+Assets are attached before publication because immutable releases lock their assets once a
+release is published. See [DEVELOPMENT.md](DEVELOPMENT.md) for the release steps.
 
 ## Verify Release Attestation (gh CLI)
 
